@@ -318,9 +318,9 @@ html[lang="ar"] .brand__tag{
 .composer__input{
   flex:1;
   min-width:0;
-  padding-inline-end:46px;         /* room for the date control */
   height:var(--tap);
   padding-inline:16px;
+  padding-inline-end:46px;         /* after the shorthand, or it is wiped out */
   border:1px solid var(--line);
   border-radius:var(--r-md);
   background:var(--surface);
@@ -2024,7 +2024,12 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
 
   function notify(task) {
     const body = t().dueBody;
-    const options = { body: body, tag: task.id, icon: ICON_192, badge: ICON_192, lang: state.lang };
+    const options = {
+      body: body, tag: task.id, icon: ICON_192, badge: ICON_192, lang: state.lang,
+      requireInteraction: true,                    // stays in the tray until tapped
+      renotify: true,
+      vibrate: [200, 100, 200]
+    };
     if (swReg && swReg.showNotification) swReg.showNotification(task.text, options);
     else { try { new Notification(task.text, options); } catch (e) { /* not allowed here */ } }
     updateBadge();
@@ -2074,11 +2079,13 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     if (!task || task.done) return;
     notify(task);
     stripKind = "due";
-    showStrip(task.text, { label: t().markDone, run: function () {
-      hideStrip();
-      if (find(id)) toggleTask(id);
-      else { task.done = true; saveGoals(); renderGoals(); scheduleSync(); }
-    } }, null, 30);
+    showStrip(task.text,
+      { label: t().markDone, run: function () {
+          hideStrip();
+          if (find(id)) toggleTask(id);
+          else { task.done = true; saveGoals(); renderGoals(); scheduleSync(); }
+        } },
+      { label: t().later, run: hideStrip });       // no timeout: it waits for you
     if (task.repeat && advance(task)) commit(); else scheduleSync();
   }
 
@@ -2747,7 +2754,12 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
 
   function announcePrayer(row) {
     const body = t().prayerNow(row.name);
-    const options = { body: body, tag: "prayer-" + row.key, icon: ICON_192, badge: ICON_192 };
+    const options = {
+      body: body, tag: "prayer-" + row.key, icon: ICON_192, badge: ICON_192,
+      requireInteraction: true,
+      renotify: true,
+      vibrate: [200, 100, 200]
+    };
     if (swReg && swReg.showNotification) swReg.showNotification(row.name, options);
     else { try { new Notification(row.name, options); } catch (e) { /* not allowed here */ } }
     if (state.tab === "prayer") renderPrayer();
