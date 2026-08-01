@@ -1,10 +1,17 @@
 /* Optional companion for hosted deployments: gives the app real offline
    support, instant loads, and somewhere for reminders to be delivered.
    Drop it next to index.html. */
-const CACHE = "todo-v2";
+const CACHE = "todo-v3";
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./"])).then(() => self.skipWaiting()));
+  /* No skipWaiting here: a new version waits until the person taps Update, so
+     the page is never swapped out from under them mid-sentence. */
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./"])));
+});
+
+/* The page asks for the swap when the person is ready. */
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (e) => {
