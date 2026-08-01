@@ -416,7 +416,8 @@ html[lang="ar"] .brand__tag{
   -webkit-appearance:none;appearance:none;
   cursor:pointer;
 }
-.composer__plan{
+/* Outside the text box: the field keeps its width, and the button keeps 44px */
+.composer__mic{
   position:absolute;inset-inline-end:6px;top:50%;
   transform:translateY(-50%);
   width:34px;height:34px;
@@ -424,12 +425,34 @@ html[lang="ar"] .brand__tag{
   border-radius:9px;
   background:none;border:0;
 }
-.composer__plan svg{
+.composer__mic svg{
   width:19px;height:19px;
-  fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;
+  fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
 }
-.composer__plan[aria-expanded="true"]{background:var(--accent-soft)}
-.composer__plan[aria-expanded="true"] svg{stroke:var(--accent)}
+.composer__mic.is-listening{background:var(--accent)}
+.composer__mic.is-listening svg{stroke:var(--on-accent)}
+.composer__mic.is-listening{animation:mic-pulse 1.4s ease-in-out infinite}
+@keyframes mic-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+@media (prefers-reduced-motion:reduce){.composer__mic.is-listening{animation:none}}
+
+.plan-link{
+  flex:none;
+  align-self:center;
+  display:flex;align-items:center;gap:6px;
+  min-height:32px;
+  padding:4px 12px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--surface);
+  color:var(--muted);
+  font-size:.76rem;
+  font-weight:600;
+}
+.plan-link svg{
+  width:15px;height:15px;
+  fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;
+}
+.plan-link[aria-expanded="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
 
 /* The plan a person sketches before the task exists */
 .draft{
@@ -867,6 +890,12 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
 
   <section class="view" id="viewTasks">
     <p class="today" id="today"></p>
+    <button class="plan-link" id="planBtn" type="button" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 7h4M4.5 12h4M4.5 17h4"/><path d="M12.5 7h7M12.5 12h7M12.5 17h4"/>
+      </svg>
+      <span id="planBtnText"></span>
+    </button>
   <div class="composer">
     <span class="composer__field" id="composerField">
       <input class="composer__input" id="taskInput" type="text" maxlength="200"
@@ -875,11 +904,12 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       <svg class="composer__cal" viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/>
       </svg>
-      <button class="composer__plan" id="planBtn" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4.5 7h4M4.5 12h4M4.5 17h4"/><path d="M12.5 7h7M12.5 12h7M12.5 17h4"/>
-        </svg>
-      </button>
+        <button class="composer__mic" id="micTask" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="2.5" width="6" height="11" rx="3"/>
+            <path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/>
+          </svg>
+        </button>
     </span>
     <button class="composer__add" id="addBtn" type="button">Add</button>
   </div>
@@ -948,6 +978,12 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       <span class="composer__field" id="goalField">
         <input class="composer__input" id="goalInput" type="text" maxlength="80"
                autocomplete="off" enterkeyhint="done">
+        <button class="composer__mic" id="micGoal" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="2.5" width="6" height="11" rx="3"/>
+            <path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/>
+          </svg>
+        </button>
         <input class="composer__date" id="goalDue" type="date">
         <svg class="composer__cal" viewBox="0 0 24 24" aria-hidden="true">
           <rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/>
@@ -963,8 +999,17 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
 
   <section class="view" id="viewNotes" hidden>
     <div class="composer">
-      <input class="composer__input" id="noteInput" type="text" maxlength="500"
-             autocomplete="off" enterkeyhint="done">
+      <span class="composer__field">
+        <input class="composer__input" id="noteInput" type="text" maxlength="500"
+               autocomplete="off" enterkeyhint="done">
+        <button class="composer__mic" id="micNote" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="2.5" width="6" height="11" rx="3"/>
+            <path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/>
+          </svg>
+        </button>
+
+      </span>
       <button class="composer__add" id="noteAdd" type="button"></button>
     </div>
     <section class="panel">
@@ -1192,6 +1237,10 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       noteEmpty: "Nothing kept yet. A plate number, a date, an address — write it above.",
       noteNoMatch: function (q) { return "Nothing here matches \u201C" + q + "\u201D."; },
       copy: "Copy", copied: "Copied", copyFailed: "Select the text and copy it by hand.",
+      dictate: "Speak instead of typing", listening: "Listening…",
+      micDenied: "The microphone is blocked. Allow it in your browser settings for this site.",
+      micFailed: "Nothing was heard. Try again, or type it.",
+      micOffline: "Dictation needs an internet connection.",
       done: "Done", doneEmpty: "Nothing here yet. Finish a task and delete it — it will be kept here.",
       doneCount: function (n) { return n === 1 ? "1 finished" : n + " finished"; },
       restoreTask: "Put it back", forget: "Forget it", clearDone: "Clear the record",
@@ -1206,6 +1255,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
         ["moon", "Prayer times", "Open Prayer, tap the city box, choose your country then your city. Turn the alert on to be told when each prayer comes in."],
         ["goal", "Goals", "A goal, a date if you want one, and its first step. Nothing else is required."],
         ["note", "Notes", "Anything worth keeping — a plate number, an address, a date. Typing in the box searches what you saved, and each note has a copy button."],
+        ["mic", "Speak instead of typing", "Where your browser allows it, a microphone appears in the box. Tap it, say what you want, and it is written for you. It needs a connection, and it adds to what is already there rather than replacing it."],
         ["tick", "Your record", "Finish a task and delete it, and it is kept in your record with the day you did it. Tap the count under the list to see it, or put a task back."],
         ["save", "Keep a copy", "Your data lives on this device only. Use Save a copy from time to time, and Restore to bring it back."],
         ["phone", "Put it on your screen", "Tap the phone icon at the top. It installs like any app and then works without internet."]
@@ -1227,6 +1277,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       daysPast: "The date has passed",
       welcome: "Welcome", askName: "What should we call you?", yourName: "Your name",
       start: "Start", skip: "Skip",
+      updateReady: "A new version is ready.", updateNow: "Update",
       install: "Install the app",
       installNow: "Install", later: "Later",
       installAsk: "Put it on your home screen so it works offline.",
@@ -1299,6 +1350,10 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       noteEmpty: "لا ملاحظات بعد. رقم لوحة، أو موعد، أو عنوان — اكتبه من الأعلى.",
       noteNoMatch: function (q) { return "لا شيء هنا يطابق \u201C" + q + "\u201D."; },
       copy: "نسخ", copied: "نُسخت", copyFailed: "حدّد النص وانسخه يدوياً.",
+      dictate: "أملِ بصوتك بدل الكتابة", listening: "أستمع…",
+      micDenied: "الميكروفون محظور. اسمح به من إعدادات المتصفح لهذا الموقع.",
+      micFailed: "لم أسمع شيئاً. حاول ثانية، أو اكتبها.",
+      micOffline: "الإملاء يحتاج اتصالاً بالإنترنت.",
       done: "المنجز", doneEmpty: "لا شيء هنا بعد. أنجز مهمة ثم احذفها — تُحفظ لك هنا.",
       doneCount: function (n) { return n === 1 ? "مهمة منجزة" : n + " مهمة منجزة"; },
       restoreTask: "أعدها", forget: "احذفها نهائياً", clearDone: "أفرغ السجلّ",
@@ -1313,6 +1368,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
         ["moon", "مواقيت الصلاة", "افتح «الصلاة»، اضغط صندوق المدينة، اختر دولتك ثم مدينتك. وفعّل التنبيه ليصلك عند دخول كل وقت."],
         ["goal", "الأهداف", "هدف، وتاريخ إن أردت، وأول خطوة. لا شيء آخر مطلوب."],
         ["note", "الملاحظات", "أي شيء تريد حفظه — رقم لوحة، عنوان، موعد. والكتابة في الصندوق تبحث فيما حفظت، ولكل ملاحظة زر نسخ."],
+        ["mic", "أملِ بصوتك", "حيث يسمح متصفحك، تظهر أيقونة ميكروفون في الصندوق. اضغطها وقل ما تريد فيُكتب لك. تحتاج اتصالاً بالإنترنت، وتضيف إلى ما كتبتَه لا تمحوه."],
         ["tick", "سجلّ الإنجاز", "أنجز مهمة ثم احذفها فتُحفظ في سجلّك مع تاريخ إنجازها. اضغط العدد أسفل القائمة لتراه، أو لتعيد مهمة."],
         ["save", "احفظ نسخة", "بياناتك على هذا الجهاز وحده. استخدم «حفظ نسخة» من حين لآخر، و«استعادة» لإرجاعها."],
         ["phone", "ثبّته على شاشتك", "اضغط أيقونة الجوال في الأعلى. يُثبَّت كأي تطبيق ثم يعمل بلا إنترنت."]
@@ -1334,6 +1390,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       daysPast: "مضى الموعد",
       welcome: "أهلاً بك", askName: "ما اسمك؟", yourName: "اسمك",
       start: "ابدأ", skip: "تخطّي",
+      updateReady: "يوجد تحديث جديد.", updateNow: "حدّث الآن",
       install: "ثبّت التطبيق",
       installNow: "تثبيت", later: "لاحقاً",
       installAsk: "ثبّته على شاشتك ليعمل دون إنترنت.",
@@ -1741,9 +1798,67 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     // hosted. Opened from disk or installed, the app is already self-contained.
     if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
       navigator.serviceWorker.register("sw.js")
-        .then(function (reg) { swReg = reg; syncReminders(); })
+        .then(function (reg) {
+          swReg = reg;
+          syncReminders();
+          watchForUpdate(reg);
+        })
         .catch(function () { /* not deployed: reminders fall back to timers */ });
     }
+  }
+
+  /* ==========================================================
+     5b. A NEW VERSION, ANNOUNCED RATHER THAN SPRUNG
+     ==========================================================
+     Updates already arrive on their own: the worker fetches from the network
+     first. What was missing is being told. When a new version has downloaded
+     and is waiting, say so once and let the person choose the moment — nothing
+     is reloaded underneath them while they are typing. */
+  let waitingWorker = null;
+
+  function watchForUpdate(reg) {
+    if (reg.waiting) offerUpdate(reg.waiting);     // one was ready before we looked
+
+    reg.addEventListener("updatefound", function () {
+      const fresh = reg.installing;
+      if (!fresh) return;
+      fresh.addEventListener("statechange", function () {
+        if (fresh.state === "installed" && navigator.serviceWorker.controller) {
+          offerUpdate(fresh);                      // installed, and not the first ever visit
+        }
+      });
+    });
+
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (reloading) location.reload();
+    });
+
+    /* Ask again whenever the app is brought back, so a copy left open for days
+       still notices. reg.update() is a no-op when nothing changed. */
+    const check = function () {
+      if (document.visibilityState === "visible") {
+        try { reg.update(); } catch (e) { /* offline: nothing to do */ }
+      }
+    };
+    document.addEventListener("visibilitychange", check);
+    setInterval(check, 3600000);
+  }
+
+  let reloading = false;
+
+  function offerUpdate(worker) {
+    if (waitingWorker) return;                     // only ever say it once
+    waitingWorker = worker;
+    const s = t();
+    stripKind = "update";
+    showStrip(s.updateReady,
+      { label: s.updateNow, run: function () {
+          reloading = true;
+          hideStrip();
+          if (waitingWorker) waitingWorker.postMessage({ type: "SKIP_WAITING" });
+          setTimeout(function () { if (!reloading) return; location.reload(); }, 800);
+        } },
+      { label: s.later, run: hideStrip });
   }
 
   /* ==========================================================
@@ -1776,6 +1891,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     el.tagline.hidden = !hasOwner();               // with no name, the title is the app itself
     el.langBtn.textContent = s.switchTo;
     el.langBtn.setAttribute("aria-label", s.switchLabel);
+    fitMicButtons();                               // labels follow the language
     el.helpBtn.setAttribute("aria-label", s.help);
     el.helpBtn.title = s.help;
     if (!el.help.hidden) renderHelp();             // follow a language switch
@@ -3573,6 +3689,8 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     el.planBtn.setAttribute("aria-expanded", draftOpen ? "true" : "false");
     el.planBtn.setAttribute("aria-label", s.planFirst);
     el.planBtn.title = s.planFirst;
+    const label = document.getElementById("planBtnText");
+    if (label) label.textContent = draftPlan.length ? s.plan + " " + draftPlan.length : s.planFirst;
     if (!draftOpen) return;
 
     el.draftLabel.textContent = draftPlan.length ? s.plan : s.planHint;
@@ -3670,6 +3788,87 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       if (task.done || !task.due) return false;
       return new Date(task.due + "T23:59:59") <= end;
     }).length;
+  }
+
+  /* ==========================================================
+     12d1. DICTATION — say it instead of typing it
+     ==========================================================
+     The browser's own speech recognition, which means: it needs a connection
+     (the audio is transcribed on the vendor's servers), it is absent in some
+     browsers, and on iOS it is refused inside an installed app. So the button
+     only appears where it can actually work, and never replaces the keyboard. */
+  function speechEngine() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+
+  function canDictate() {
+    if (!speechEngine()) return false;
+    if (isIOS() && installed()) return false;      // Safari refuses it in a standalone app
+    return true;
+  }
+
+  let listening = null;                            // the field being dictated into
+
+  function dictateInto(field, button) {
+    const s = t();
+    if (listening) { stopDictation(); return; }
+    if (!navigator.onLine) { stripKind = "mic"; showStrip(s.micOffline, null, null, 5); return; }
+
+    const Engine = speechEngine();
+    let engine;
+    try { engine = new Engine(); } catch (e) { return; }
+    engine.lang = state.lang === "ar" ? "ar-SA" : "en-US";
+    engine.interimResults = true;
+    engine.continuous = false;
+    engine.maxAlternatives = 1;
+
+    const before = field.value;
+    let heard = "";
+
+    engine.onresult = function (e) {
+      let text = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
+      heard = text;
+      field.value = (before ? before + " " : "") + text;   // dictation adds, never wipes
+      if (field === el.input) renderList();                // the live filter keeps up
+      if (field === el.noteInput) renderNotes();
+    };
+    engine.onerror = function (e) {
+      stripKind = "mic";
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") showStrip(s.micDenied, null, null, 10);
+      else if (e.error !== "aborted") showStrip(s.micFailed, null, null, 5);
+    };
+    engine.onend = function () {
+      listening = null;
+      button.setAttribute("aria-pressed", "false");
+      button.classList.remove("is-listening");
+      field.focus();
+      if (heard.trim()) hideStrip();
+    };
+
+    try { engine.start(); } catch (e) { return; }
+    listening = { engine: engine, button: button };
+    button.setAttribute("aria-pressed", "true");
+    button.classList.add("is-listening");
+    stripKind = "mic";
+    showStrip(s.listening, null, null, 0);
+  }
+
+  function stopDictation() {
+    if (!listening) return;
+    try { listening.engine.stop(); } catch (e) { /* already ending */ }
+  }
+
+  /* Every composer gets the same button, or none of them do */
+  function fitMicButtons() {
+    const on = canDictate();
+    [["micTask", el.input], ["micNote", el.noteInput], ["micGoal", el.goalInput]].forEach(function (pair) {
+      const button = document.getElementById(pair[0]);
+      if (!button) return;
+      button.hidden = !on;
+      button.setAttribute("aria-label", t().dictate);
+      button.title = t().dictate;
+    });
   }
 
   /* ==========================================================
@@ -3803,6 +4002,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     moon:   '<path d="M4.5 19.5h15"/><path d="M6.5 19.5v-5a5.5 5.5 0 0 1 11 0v5"/><path d="M12 4v4.5"/>',
     goal:   '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 12 21 3"/>',
     note:   '<path d="M6 3.5h9L19 8v12.5H6Z"/><path d="M14.5 3.5V8H19"/><path d="M9 12h7M9 16h5"/>',
+    mic:    '<rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/>',
     tick:   '<path d="M20.5 6 9 17.5 3.5 12"/>',
     save:   '<path d="M12 4v10"/><path d="m8 10.5 4 4 4-4"/><path d="M5 17.5v2h14v-2"/>',
     phone:  '<rect x="5.5" y="2" width="13" height="20" rx="3"/><path d="M10 4.6h4"/><path d="M12 8.4v5.4"/><path d="m9.5 11.4 2.5 2.6 2.5-2.6"/>'
@@ -4597,6 +4797,12 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     setOwner(el.brandEdit.value);
   });
 
+  [["micTask", "taskInput"], ["micNote", "noteInput"], ["micGoal", "goalInput"]].forEach(function (pair) {
+    const button = document.getElementById(pair[0]);
+    const field = document.getElementById(pair[1]);
+    if (button && field) button.addEventListener("click", function () { dictateInto(field, button); });
+  });
+
   el.recordLink.addEventListener("click", openRecord);
   el.recordClose.addEventListener("click", closeRecord);
   el.record.addEventListener("click", function (e) {
@@ -4792,6 +4998,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   renderList();
   translateTasks(true);                            // quietly: never prompt on launch
   renderTabs();
+  fitMicButtons();
   renderDraft();
   setInterval(renderToday, 60000);                 // the countdown stays honest
   fillCities();
