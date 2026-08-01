@@ -139,6 +139,36 @@ button{background:none;border:0;cursor:pointer}
 }
 .dua__meta{font-size:.9em;opacity:.8}   /* the years sit apart, never inside the prayer */
 
+/* A sheet, not a page: the app stays a single screen */
+.sheet{
+  position:fixed;inset:0;z-index:40;
+  display:flex;align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.34);
+  padding:12px;
+}
+.sheet__panel{
+  width:100%;max-width:520px;max-height:82vh;
+  display:flex;flex-direction:column;
+  background:var(--bg);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  animation:sheet-in .2s ease-out both;
+}
+@keyframes sheet-in{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.sheet__head{
+  flex:none;display:flex;align-items:center;gap:8px;
+  padding:12px 8px 12px 16px;
+  border-bottom:1px solid var(--line);
+}
+.sheet__title{flex:1;font-size:1.02rem;font-weight:650;color:var(--ink)}
+.sheet__body{flex:1;min-height:0;overflow-y:auto;padding:6px 16px 20px}
+.help__item{padding:14px 0;border-bottom:1px solid var(--line)}
+.help__item:last-child{border-bottom:0}
+.help__q{display:flex;align-items:center;gap:9px;font-weight:650;color:var(--ink);font-size:.94rem}
+.help__q svg{flex:none;width:19px;height:19px;fill:none;stroke:var(--accent);stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.help__a{margin-block-start:5px;padding-inline-start:28px;font-size:.86rem;line-height:1.65;color:var(--muted)}
+
 .tabs{display:flex;gap:5px;flex:none}
 .tab{
   flex:1;
@@ -158,6 +188,22 @@ button{background:none;border:0;cursor:pointer}
   border-color:var(--accent-soft);
 }
 .view{flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--gap)}
+
+/* One quiet line that shows the app already knows the day */
+.today{
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:4px 10px;
+  font-size:.76rem;
+  color:var(--muted);
+  line-height:1.5;
+}
+.today__date{font-weight:600;color:var(--ink)}
+.today__next{color:var(--accent);font-weight:600}
+.today__sep{opacity:.4;margin-inline:2px}
 .view[hidden]{display:none}
 
 .city-hit{cursor:pointer}
@@ -185,6 +231,18 @@ button{background:none;border:0;cursor:pointer}
 .prayer.is-next{background:var(--done-bg)}
 .prayer.is-next .prayer__name{font-weight:650;color:var(--accent)}
 .prayer.is-next .prayer__time{color:var(--accent);font-weight:650}
+.city-back{background:var(--accent-soft)}
+.city-back .prayer__name{color:var(--accent);font-weight:600}
+.city-where{font-size:.76rem;opacity:.75;margin-inline-start:10px}
+.city-count{
+  font-size:.72rem;
+  min-width:2.4em;
+  text-align:center;
+  padding:2px 6px;
+  border-radius:999px;
+  background:var(--done-bg);
+  color:var(--muted);
+}
 .prayer__note{padding:14px;font-size:.76rem;color:var(--muted);text-align:center}
 
 .note{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
@@ -320,7 +378,7 @@ html[lang="ar"] .brand__tag{
   min-width:0;
   height:var(--tap);
   padding-inline:16px;
-  padding-inline-end:46px;         /* after the shorthand, or it is wiped out */
+  padding-inline-end:82px;         /* after the shorthand, or it is wiped out */
   border:1px solid var(--line);
   border-radius:var(--r-md);
   background:var(--surface);
@@ -330,15 +388,45 @@ html[lang="ar"] .brand__tag{
 
 /* A real date input, made invisible over its own icon: native picker, no library */
 .composer__date{
-  position:absolute;inset-inline-end:0;top:0;
+  position:absolute;inset-inline-end:36px;top:0;
   width:46px;height:100%;
   opacity:0;
   border:0;padding:0;background:none;
   -webkit-appearance:none;appearance:none;
   cursor:pointer;
 }
+.composer__plan{
+  position:absolute;inset-inline-end:6px;top:50%;
+  transform:translateY(-50%);
+  width:34px;height:34px;
+  display:grid;place-items:center;
+  border-radius:9px;
+  background:none;border:0;
+}
+.composer__plan svg{
+  width:19px;height:19px;
+  fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;
+}
+.composer__plan[aria-expanded="true"]{background:var(--accent-soft)}
+.composer__plan[aria-expanded="true"] svg{stroke:var(--accent)}
+
+/* The plan a person sketches before the task exists */
+.draft{
+  flex:none;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  background:var(--surface);
+}
+.draft__head{display:flex;align-items:center;gap:8px}
+.draft__label{flex:1;font-size:.8rem;font-weight:600;color:var(--muted)}
+.draft__list{list-style:none;display:flex;flex-direction:column;gap:6px;max-height:34vh;overflow-y:auto}
+
 .composer__cal{
-  position:absolute;inset-inline-end:13px;top:50%;
+  position:absolute;inset-inline-end:49px;top:50%;
   transform:translateY(-50%);
   width:20px;height:20px;
   pointer-events:none;
@@ -453,8 +541,13 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
 .linkbtn--go{flex:none;background:var(--accent);color:var(--on-accent);border-color:var(--accent);min-width:76px}
 .linkbtn--quiet{border:0;background:none;color:var(--muted);font-weight:500}
 
+@keyframes task-in{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:none}
+}
 .task{
   display:flex;
+  animation:task-in .22s ease-out both;
   flex-wrap:wrap;                  /* lets the date field drop to its own line when editing */
   align-items:center;
   gap:8px;
@@ -693,6 +786,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
    8. MOTION PREFERENCE
    ============================================================ */
 @media (prefers-reduced-motion:reduce){
+  .task{animation:none}
   *,*::before,*::after{
     transition:none!important;
     animation:none!important;
@@ -722,10 +816,18 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       </span>
     </h1>
     <span class="header__tools">
+      <button class="tool-btn" id="helpBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9.6 9.3a2.5 2.5 0 1 1 3.2 2.5c-.6.2-.9.7-.9 1.4v.5"/>
+          <path d="M12 17.1h.01"/>
+        </svg>
+      </button>
       <button class="tool-btn" id="installBtn" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="6" y="2.5" width="12" height="19" rx="2.5"/>
-          <path d="M12 7.5v6.5"/><path d="m9.2 11.2 2.8 2.8 2.8-2.8"/>
+          <rect x="5.5" y="2" width="13" height="20" rx="3"/>
+          <path d="M10 4.6h4"/><path d="M10.6 19.6h2.8"/>
+          <path d="M12 8.4v5.4"/><path d="m9.5 11.4 2.5 2.6 2.5-2.6"/>
         </svg>
       </button>
       <button class="tool-btn" id="backupBtn" type="button">
@@ -743,6 +845,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   </nav>
 
   <section class="view" id="viewTasks">
+    <p class="today" id="today"></p>
   <div class="composer">
     <span class="composer__field" id="composerField">
       <input class="composer__input" id="taskInput" type="text" maxlength="200"
@@ -751,8 +854,25 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       <svg class="composer__cal" viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/>
       </svg>
+      <button class="composer__plan" id="planBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4.5 7h4M4.5 12h4M4.5 17h4"/><path d="M12.5 7h7M12.5 12h7M12.5 17h4"/>
+        </svg>
+      </button>
     </span>
     <button class="composer__add" id="addBtn" type="button">Add</button>
+  </div>
+
+  <div class="draft" id="draft" hidden>
+    <div class="draft__head">
+      <span class="draft__label" id="draftLabel"></span>
+      <button class="linkbtn" id="draftSuggest" type="button"></button>
+    </div>
+    <ul class="draft__list" id="draftList"></ul>
+    <div class="edit__row">
+      <input class="fld" id="draftInput" maxlength="120">
+      <button class="linkbtn linkbtn--box" id="draftAdd" type="button">+</button>
+    </div>
   </div>
 
   <section class="panel">
@@ -835,6 +955,18 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     <span class="dua__pray" id="duaPray"></span>
     <span class="dua__meta" id="duaMeta"></span>
   </p>
+
+  <div class="sheet" id="help" hidden>
+    <div class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="sheet__head">
+        <h2 class="sheet__title" id="helpTitle"></h2>
+        <button class="icon-btn" id="helpClose" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="sheet__body" id="helpBody"></div>
+    </div>
+  </div>
 
   <p class="sr-only" id="live" role="status" aria-live="polite"></p>
 </main>
@@ -943,6 +1075,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   const ATHAN_KEY  = "todo.athan";
   const GOALS_KEY  = "todo.goals";
   const NOTES_KEY  = "todo.notes";
+  const DRAFT_KEY  = "todo.draft";      // a plan sketched before the task exists
   const MAX_LEN   = 200;
   const PRIORITIES = ["high", "normal", "low"];
   const REPEATS    = ["none", "daily", "weekly", "monthly", "yearly", "hourly", "custom"];
@@ -1020,7 +1153,20 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       noteEmpty: "Nothing kept yet. A plate number, a date, an address — write it above.",
       noteNoMatch: function (q) { return "Nothing here matches \u201C" + q + "\u201D."; },
       copy: "Copy", copied: "Copied", copyFailed: "Select the text and copy it by hand.",
-      city: "City", athanOn: "Alert on", athanOff: "Alert off",
+      help: "How to use it",
+      helpItems: [
+        ["task", "Add a task", "Type it and press Add. Tap the list icon beside the box to plan its steps first — the plan is kept even if you close it."],
+        ["tap", "Change a task", "Tap the task itself to open its options: a date, a time, how often it repeats, and its priority."],
+        ["bell", "Get reminded", "Give a task a date and a time. The reminder waits for you and does not disappear on its own."],
+        ["repeat", "Repeat it", "Daily, weekly, monthly or yearly. A repeating task moves itself to the next date once its time passes."],
+        ["moon", "Prayer times", "Open Prayer, tap the city box, choose your country then your city. Turn the alert on to be told when each prayer comes in."],
+        ["goal", "Goals", "A goal, a date if you want one, and its first step. Nothing else is required."],
+        ["note", "Notes", "Anything worth keeping — a plate number, an address, a date. Typing in the box searches what you saved, and each note has a copy button."],
+        ["save", "Keep a copy", "Your data lives on this device only. Use Save a copy from time to time, and Restore to bring it back."],
+        ["phone", "Put it on your screen", "Tap the phone icon at the top. It installs like any app and then works without internet."]
+      ],
+      city: "City", country: "Country", backToCountries: "All countries",
+      chooseCountry: "Choose a country", inCountry: function (c) { return "Cities in " + c; }, athanOn: "Alert on", athanOff: "Alert off",
       findCity: "Search for your city", noCity: "No city by that name.",
       fajr: "Fajr", sunrise: "Sunrise", dhuhr: "Dhuhr", jumua: "Jumu'ah",
       asr: "Asr", maghrib: "Maghrib", isha: "Isha",
@@ -1047,6 +1193,11 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       installedAlready: "Installed on this device.",
       installTitle: "Install on your device",
       plan: "Plan", suggest: "Suggest a plan", addStep: "Add a step",
+      planFirst: "Plan it first", planHint: "Write the task, then plan its steps.",
+      inMinutes: function (n) { return n < 1 ? "now" : n === 1 ? "in a minute" : "in " + n + " min"; },
+      inHours: function (n) { return n === 1 ? "in an hour" : "in " + n + " hours"; },
+      dueToday: function (n) { return n === 1 ? "1 task today" : n + " tasks today"; },
+      allClear: "Nothing due today",
       planCount: function (d, n) { return "Plan " + d + "/" + n; },
       share: "Share", shareFail: "Sharing is not available here — the card was downloaded instead.",
       askRemind: "Remind you when a task is due? Your device shows a notification.",
@@ -1103,7 +1254,20 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       noteEmpty: "لا ملاحظات بعد. رقم لوحة، أو موعد، أو عنوان — اكتبه من الأعلى.",
       noteNoMatch: function (q) { return "لا شيء هنا يطابق \u201C" + q + "\u201D."; },
       copy: "نسخ", copied: "نُسخت", copyFailed: "حدّد النص وانسخه يدوياً.",
-      city: "المدينة", athanOn: "التنبيه مفعّل", athanOff: "التنبيه متوقف",
+      help: "طريقة الاستخدام",
+      helpItems: [
+        ["task", "أضف مهمة", "اكتبها واضغط «إضافة». وإن أردت التخطيط أولاً، اضغط أيقونة القائمة بجانب الصندوق — الخطة تبقى محفوظة حتى لو أغلقتها."],
+        ["tap", "عدّل المهمة", "اضغط على المهمة نفسها لتفتح خياراتها: التاريخ، الوقت، التكرار، والأولوية."],
+        ["bell", "التذكير", "ضع للمهمة تاريخاً ووقتاً. التذكير ينتظرك ولا يختفي من تلقاء نفسه."],
+        ["repeat", "التكرار", "يومي أو أسبوعي أو شهري أو سنوي. والمهمة المتكرّرة تنتقل لموعدها التالي بعد فوات وقتها."],
+        ["moon", "مواقيت الصلاة", "افتح «الصلاة»، اضغط صندوق المدينة، اختر دولتك ثم مدينتك. وفعّل التنبيه ليصلك عند دخول كل وقت."],
+        ["goal", "الأهداف", "هدف، وتاريخ إن أردت، وأول خطوة. لا شيء آخر مطلوب."],
+        ["note", "الملاحظات", "أي شيء تريد حفظه — رقم لوحة، عنوان، موعد. والكتابة في الصندوق تبحث فيما حفظت، ولكل ملاحظة زر نسخ."],
+        ["save", "احفظ نسخة", "بياناتك على هذا الجهاز وحده. استخدم «حفظ نسخة» من حين لآخر، و«استعادة» لإرجاعها."],
+        ["phone", "ثبّته على شاشتك", "اضغط أيقونة الجوال في الأعلى. يُثبَّت كأي تطبيق ثم يعمل بلا إنترنت."]
+      ],
+      city: "المدينة", country: "الدولة", backToCountries: "كل الدول",
+      chooseCountry: "اختر الدولة", inCountry: function (c) { return "مدن " + c; }, athanOn: "التنبيه مفعّل", athanOff: "التنبيه متوقف",
       findCity: "ابحث عن مدينتك", noCity: "لا توجد مدينة بهذا الاسم.",
       fajr: "الفجر", sunrise: "الشروق", dhuhr: "الظهر", jumua: "الجمعة",
       asr: "العصر", maghrib: "المغرب", isha: "العشاء",
@@ -1130,6 +1294,11 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       installedAlready: "التطبيق مثبَّت على هذا الجهاز.",
       installTitle: "ثبّت التطبيق على جهازك",
       plan: "الخطة", suggest: "خطة مقترحة", addStep: "أضف خطوة",
+      planFirst: "خطّط لها أولاً", planHint: "اكتب المهمة، ثم خطّط خطواتها.",
+      inMinutes: function (n) { return n < 1 ? "الآن" : n === 1 ? "بعد دقيقة" : "بعد " + n + " دقيقة"; },
+      inHours: function (n) { return n === 1 ? "بعد ساعة" : "بعد " + n + " ساعات"; },
+      dueToday: function (n) { return n === 1 ? "مهمة اليوم" : n + " مهام اليوم"; },
+      allClear: "لا مهام مستحقة اليوم",
       planCount: function (d, n) { return "الخطة " + d + "/" + n; },
       share: "مشاركة", shareFail: "المشاركة غير متاحة هنا — نُزّلت البطاقة بدلاً من ذلك.",
       askRemind: "أُذكّرك عند موعد المهمة؟ سيظهر إشعار على جهازك.",
@@ -1271,6 +1440,13 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     due:     document.getElementById("taskDue"),
     field:   document.getElementById("composerField"),
     addBtn:  document.getElementById("addBtn"),
+    planBtn: document.getElementById("planBtn"),
+    draft:   document.getElementById("draft"),
+    draftLabel: document.getElementById("draftLabel"),
+    draftSuggest: document.getElementById("draftSuggest"),
+    draftList: document.getElementById("draftList"),
+    draftInput: document.getElementById("draftInput"),
+    draftAdd: document.getElementById("draftAdd"),
     scroller: document.getElementById("scroller"),
     progress: document.getElementById("progressFill"),
     progressBar: document.getElementById("progress"),
@@ -1279,6 +1455,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     duaMeta:  document.getElementById("duaMeta"),
     list:    document.getElementById("taskList"),
     empty:   document.getElementById("emptyState"),
+    today:   document.getElementById("today"),
     emptyMood: document.getElementById("emptyMood"),
     emptyHint: document.getElementById("emptyHint"),
     tabs:      document.getElementById("tabs"),
@@ -1307,6 +1484,11 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     welcomeName: document.getElementById("welcomeName"),
     welcomeGo: document.getElementById("welcomeGo"),
     welcomeSkip: document.getElementById("welcomeSkip"),
+    helpBtn:  document.getElementById("helpBtn"),
+    help:     document.getElementById("help"),
+    helpTitle: document.getElementById("helpTitle"),
+    helpBody: document.getElementById("helpBody"),
+    helpClose: document.getElementById("helpClose"),
     installBtn: document.getElementById("installBtn"),
     backupBtn:  document.getElementById("backupBtn"),
     importFile: document.getElementById("importFile"),
@@ -1535,6 +1717,9 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     el.tagline.hidden = !hasOwner();               // with no name, the title is the app itself
     el.langBtn.textContent = s.switchTo;
     el.langBtn.setAttribute("aria-label", s.switchLabel);
+    el.helpBtn.setAttribute("aria-label", s.help);
+    el.helpBtn.title = s.help;
+    if (!el.help.hidden) renderHelp();             // follow a language switch
     el.installBtn.setAttribute("aria-label", s.install);
     el.installBtn.title = s.install;
     el.backupBtn.setAttribute("aria-label", s.backup);
@@ -1573,7 +1758,6 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       const editBtn = row.children[4].children[0];
       const delBtn = row.children[4].children[1];
       number.textContent = i + 1;
-
 
       row.dataset.id = task.id;
       if (task.done) row.classList.add("is-done");
@@ -1614,6 +1798,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     }
 
     el.list.replaceChildren(frag);                 // one insertion, one reflow
+    renderToday();
     if (greetingDue()) { showWelcome(); }
     else {
       el.welcome.hidden = true;
@@ -2196,6 +2381,124 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   ];
 
   /* name_ar, name_en, latitude, longitude, method index */
+  /* Every timezone in the city table maps to exactly one country, checked
+     against the table itself so no city can end up without a home. */
+  const COUNTRIES = {
+    "Asia/Riyadh":["السعودية","Saudi Arabia"],
+    "Asia/Kuwait":["الكويت","Kuwait"],
+    "Asia/Qatar":["قطر","Qatar"],
+    "Asia/Bahrain":["البحرين","Bahrain"],
+    "Asia/Dubai":["الإمارات","UAE"],
+    "Asia/Muscat":["عُمان","Oman"],
+    "Asia/Aden":["اليمن","Yemen"],
+    "Asia/Amman":["الأردن","Jordan"],
+    "Asia/Hebron":["فلسطين","Palestine"],
+    "Asia/Gaza":["فلسطين","Palestine"],
+    "Asia/Jerusalem":["فلسطين","Palestine"],
+    "Asia/Beirut":["لبنان","Lebanon"],
+    "Asia/Damascus":["سوريا","Syria"],
+    "Asia/Baghdad":["العراق","Iraq"],
+    "Africa/Cairo":["مصر","Egypt"],
+    "Africa/Khartoum":["السودان","Sudan"],
+    "Africa/Tripoli":["ليبيا","Libya"],
+    "Africa/Tunis":["تونس","Tunisia"],
+    "Africa/Algiers":["الجزائر","Algeria"],
+    "Africa/Casablanca":["المغرب","Morocco"],
+    "Africa/Nouakchott":["موريتانيا","Mauritania"],
+    "Europe/Istanbul":["تركيا","Turkey"],
+    "Asia/Kabul":["أفغانستان","Afghanistan"],
+    "Asia/Tashkent":["أوزبكستان","Uzbekistan"],
+    "Asia/Almaty":["كازاخستان","Kazakhstan"],
+    "Asia/Qostanay":["كازاخستان","Kazakhstan"],
+    "Asia/Bishkek":["قيرغيزستان","Kyrgyzstan"],
+    "Asia/Dushanbe":["طاجيكستان","Tajikistan"],
+    "Asia/Ashgabat":["تركمانستان","Turkmenistan"],
+    "Asia/Baku":["أذربيجان","Azerbaijan"],
+    "Asia/Karachi":["باكستان","Pakistan"],
+    "Asia/Dhaka":["بنغلاديش","Bangladesh"],
+    "Asia/Kolkata":["الهند","India"],
+    "Indian/Maldives":["المالديف","Maldives"],
+    "Asia/Colombo":["سريلانكا","Sri Lanka"],
+    "Asia/Jakarta":["إندونيسيا","Indonesia"],
+    "Asia/Makassar":["إندونيسيا","Indonesia"],
+    "Asia/Pontianak":["إندونيسيا","Indonesia"],
+    "Asia/Kuala_Lumpur":["ماليزيا","Malaysia"],
+    "Asia/Kuching":["ماليزيا","Malaysia"],
+    "Asia/Singapore":["سنغافورة","Singapore"],
+    "Asia/Brunei":["بروناي","Brunei"],
+    "Asia/Manila":["الفلبين","Philippines"],
+    "Asia/Bangkok":["تايلاند","Thailand"],
+    "Africa/Mogadishu":["الصومال","Somalia"],
+    "Africa/Djibouti":["جيبوتي","Djibouti"],
+    "Africa/Addis_Ababa":["إثيوبيا","Ethiopia"],
+    "Africa/Nairobi":["كينيا","Kenya"],
+    "Africa/Dar_es_Salaam":["تنزانيا","Tanzania"],
+    "Africa/Kampala":["أوغندا","Uganda"],
+    "Africa/Lagos":["نيجيريا","Nigeria"],
+    "Africa/Accra":["غانا","Ghana"],
+    "Africa/Dakar":["السنغال","Senegal"],
+    "Africa/Bamako":["مالي","Mali"],
+    "Africa/Ouagadougou":["بوركينا فاسو","Burkina Faso"],
+    "Africa/Niamey":["النيجر","Niger"],
+    "Africa/Ndjamena":["تشاد","Chad"],
+    "Africa/Conakry":["غينيا","Guinea"],
+    "Africa/Abidjan":["ساحل العاج","Ivory Coast"],
+    "Africa/Banjul":["غامبيا","Gambia"],
+    "Africa/Maputo":["موزمبيق","Mozambique"],
+    "Africa/Johannesburg":["جنوب أفريقيا","South Africa"],
+    "Europe/London":["بريطانيا","United Kingdom"],
+    "Europe/Dublin":["أيرلندا","Ireland"],
+    "Europe/Paris":["فرنسا","France"],
+    "Europe/Berlin":["ألمانيا","Germany"],
+    "Europe/Amsterdam":["هولندا","Netherlands"],
+    "Europe/Brussels":["بلجيكا","Belgium"],
+    "Europe/Vienna":["النمسا","Austria"],
+    "Europe/Zurich":["سويسرا","Switzerland"],
+    "Europe/Rome":["إيطاليا","Italy"],
+    "Europe/Madrid":["إسبانيا","Spain"],
+    "Europe/Lisbon":["البرتغال","Portugal"],
+    "Europe/Stockholm":["السويد","Sweden"],
+    "Europe/Oslo":["النرويج","Norway"],
+    "Europe/Copenhagen":["الدنمارك","Denmark"],
+    "Europe/Helsinki":["فنلندا","Finland"],
+    "Europe/Warsaw":["بولندا","Poland"],
+    "Europe/Prague":["التشيك","Czechia"],
+    "Europe/Budapest":["المجر","Hungary"],
+    "Europe/Bucharest":["رومانيا","Romania"],
+    "Europe/Sofia":["بلغاريا","Bulgaria"],
+    "Europe/Athens":["اليونان","Greece"],
+    "Europe/Moscow":["روسيا","Russia"],
+    "Asia/Yekaterinburg":["روسيا","Russia"],
+    "Europe/Kyiv":["أوكرانيا","Ukraine"],
+    "Europe/Sarajevo":["البوسنة","Bosnia"],
+    "Europe/Tirane":["ألبانيا","Albania"],
+    "Europe/Belgrade":["صربيا","Serbia"],
+    "Europe/Skopje":["مقدونيا","North Macedonia"],
+    "America/New_York":["أمريكا","United States"],
+    "America/Chicago":["أمريكا","United States"],
+    "America/Detroit":["أمريكا","United States"],
+    "America/Denver":["أمريكا","United States"],
+    "America/Phoenix":["أمريكا","United States"],
+    "America/Los_Angeles":["أمريكا","United States"],
+    "America/Toronto":["كندا","Canada"],
+    "America/Edmonton":["كندا","Canada"],
+    "America/Vancouver":["كندا","Canada"],
+    "America/Mexico_City":["المكسيك","Mexico"],
+    "America/Sao_Paulo":["البرازيل","Brazil"],
+    "America/Argentina/Buenos_Aires":["الأرجنتين","Argentina"],
+    "Australia/Sydney":["أستراليا","Australia"],
+    "Australia/Melbourne":["أستراليا","Australia"],
+    "Australia/Brisbane":["أستراليا","Australia"],
+    "Australia/Perth":["أستراليا","Australia"],
+    "Australia/Adelaide":["أستراليا","Australia"],
+    "Pacific/Auckland":["نيوزيلندا","New Zealand"],
+    "Asia/Tokyo":["اليابان","Japan"],
+    "Asia/Seoul":["كوريا","South Korea"],
+    "Asia/Shanghai":["الصين","China"],
+    "Asia/Urumqi":["الصين","China"],
+    "Asia/Hong_Kong":["هونغ كونغ","Hong Kong"]
+  };
+
   const CITIES = [
     ["مكة المكرمة","Mecca",21.42,39.83,0,"Asia/Riyadh"],
     ["المدينة المنورة","Madinah",24.52,39.57,0,"Asia/Riyadh"],
@@ -2396,12 +2699,6 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     ["أضنة","Adana",37.0,35.32,1,"Europe/Istanbul"],
     ["غازي عنتاب","Gaziantep",37.07,37.38,1,"Europe/Istanbul"],
     ["طرابزون","Trabzon",41.0,39.72,1,"Europe/Istanbul"],
-    ["طهران","Tehran",35.69,51.39,1,"Asia/Tehran"],
-    ["مشهد","Mashhad",36.3,59.61,1,"Asia/Tehran"],
-    ["أصفهان","Isfahan",32.65,51.67,1,"Asia/Tehran"],
-    ["شيراز","Shiraz",29.59,52.58,1,"Asia/Tehran"],
-    ["تبريز","Tabriz",38.08,46.29,1,"Asia/Tehran"],
-    ["قم","Qom",34.64,50.88,1,"Asia/Tehran"],
     ["كراتشي","Karachi",24.86,67.01,4,"Asia/Karachi"],
     ["لاهور","Lahore",31.55,74.34,4,"Asia/Karachi"],
     ["إسلام آباد","Islamabad",33.68,73.05,4,"Asia/Karachi"],
@@ -2687,6 +2984,93 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     el.cityPick.placeholder = t().findCity;
   }
 
+  /* Cities grouped under their country, built once and reused */
+  let cityIndex = null;
+  function countryIndex() {
+    if (cityIndex) return cityIndex;
+    const map = new Map();
+    CITIES.forEach(function (city, i) {
+      const pair = COUNTRIES[city[5]];
+      if (!pair) return;
+      const key = pair[1];                         // the English name is the stable key
+      if (!map.has(key)) map.set(key, { ar: pair[0], en: pair[1], cities: [] });
+      map.get(key).cities.push(i);
+    });
+    cityIndex = Array.from(map.values());
+    return cityIndex;
+  }
+
+  function countryName(entry) { return state.lang === "ar" ? entry.ar : entry.en; }
+
+  function sortedCountries() {
+    const list = countryIndex().slice();
+    list.sort(function (a, b) {
+      return countryName(a).localeCompare(countryName(b), state.lang === "ar" ? "ar" : "en");
+    });
+    return list;
+  }
+
+  function showCountries() {
+    const s = t();
+    browsing = null;
+    el.cityList.textContent = "";
+    sortedCountries().forEach(function (entry) {
+      const li = document.createElement("li");
+      li.className = "prayer city-hit";
+      li.dataset.country = entry.en;
+      const name = document.createElement("span");
+      name.className = "prayer__name";
+      name.textContent = countryName(entry);
+      const count = document.createElement("span");
+      count.className = "prayer__time city-count";
+      count.textContent = entry.cities.length;
+      li.appendChild(name);
+      li.appendChild(count);
+      el.cityList.appendChild(li);
+    });
+    openCityPanel(s.chooseCountry);
+  }
+
+  function showCountryCities(key) {
+    const entry = countryIndex().find(function (c) { return c.en === key; });
+    if (!entry) return;
+    browsing = key;
+    el.cityList.textContent = "";
+
+    const back = document.createElement("li");
+    back.className = "prayer city-hit city-back";
+    back.dataset.back = "1";
+    const label = document.createElement("span");
+    label.className = "prayer__name";
+    label.textContent = "\u2039 " + t().backToCountries;
+    back.appendChild(label);
+    el.cityList.appendChild(back);
+
+    entry.cities.slice().sort(function (a, b) {
+      return cityName(a).localeCompare(cityName(b), state.lang === "ar" ? "ar" : "en");
+    }).forEach(function (i) {
+      const li = document.createElement("li");
+      li.className = "prayer city-hit";
+      li.dataset.city = i;
+      const name = document.createElement("span");
+      name.className = "prayer__name";
+      name.textContent = cityName(i);
+      li.appendChild(name);
+      el.cityList.appendChild(li);
+    });
+    openCityPanel(t().inCountry(countryName(entry)));
+  }
+
+  function openCityPanel(hint) {
+    el.cityList.hidden = false;
+    el.prayerList.hidden = true;
+    el.prayerNote.hidden = false;
+    el.prayerNote.textContent = hint;
+    el.cityEmpty.hidden = true;
+  }
+
+  let browsing = null;
+
   function searchCities(term) {
     const q = fold(term);
     const hits = [];
@@ -2707,8 +3091,16 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       name.className = "prayer__name";
       name.textContent = cityName(i);
       li.appendChild(name);
+      const pair = COUNTRIES[CITIES[i][5]];
+      if (pair) {
+        const where = document.createElement("span");
+        where.className = "prayer__time city-where";
+        where.textContent = state.lang === "ar" ? pair[0] : pair[1];
+        li.appendChild(where);
+      }
       el.cityList.appendChild(li);
     });
+    browsing = null;
     el.cityList.hidden = false;
     el.prayerList.hidden = true;
     el.prayerNote.hidden = true;
@@ -2717,9 +3109,11 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   }
 
   function hideCityResults() {
+    browsing = null;
     el.cityList.hidden = true;
     el.prayerList.hidden = false;
     el.prayerNote.hidden = false;
+    el.prayerNote.textContent = t().prayerNote;
     el.cityEmpty.hidden = true;
   }
 
@@ -3043,6 +3437,238 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   }
 
   /* ==========================================================
+     12c. A PLAN SKETCHED BEFORE THE TASK EXISTS
+     ==========================================================
+     The plan panel used to appear only after a task was saved and reopened,
+     so nobody found it. Now the icon sits in the composer: tap it, get
+     suggested steps for what you have typed, edit them, and they travel with
+     the task when you add it. Closing the panel keeps the draft. */
+  let draftPlan = loadDraft();
+  let draftOpen = false;
+
+  function loadDraft() {
+    try {
+      const raw = JSON.parse(read(DRAFT_KEY) || "[]");
+      if (!Array.isArray(raw)) return [];
+      return raw.reduce(function (list, step) {
+        const text = step && typeof step.text === "string" ? step.text.trim() : "";
+        if (text) list.push({ id: step.id || createId(), text: text.slice(0, 120), done: false });
+        return list;
+      }, []).slice(0, 20);
+    } catch (e) { return []; }
+  }
+
+  function saveDraft() { write(DRAFT_KEY, JSON.stringify(draftPlan)); }
+
+  function toggleDraft() {
+    draftOpen = !draftOpen;
+    if (draftOpen && !draftPlan.length) suggestDraft();     // opening offers a plan at once
+    renderDraft();
+    if (draftOpen) el.draftInput.focus();
+  }
+
+  function suggestDraft() {
+    const typed = el.input.value.trim();
+    const sketch = { text: typed, tr: {} };
+    const existing = draftPlan.map(function (s) { return s.text; });
+    planFor(sketch).forEach(function (text) {
+      if (existing.indexOf(text) < 0 && draftPlan.length < 20) {
+        draftPlan.push({ id: createId(), text: text, done: false });
+      }
+    });
+    saveDraft();
+    renderDraft();
+  }
+
+  function addDraftStep() {
+    const text = el.draftInput.value.trim();
+    if (!text || draftPlan.length >= 20) return;
+    draftPlan.push({ id: createId(), text: text.slice(0, 120), done: false });
+    el.draftInput.value = "";
+    saveDraft();
+    renderDraft();
+    el.draftInput.focus();
+  }
+
+  /* Read the fields, not the array: a step edited but not blurred still counts */
+  function collectDraft() {
+    if (draftOpen) {
+      Array.prototype.forEach.call(el.draftList.children, function (li) {
+        const step = draftPlan.find(function (s) { return s.id === li.dataset.draft; });
+        const field = li.querySelector(".step__text");
+        if (step && field) step.text = field.value.trim().slice(0, 120) || step.text;
+      });
+      const pending = el.draftInput.value.trim();
+      if (pending && draftPlan.length < 20) {
+        draftPlan.push({ id: createId(), text: pending.slice(0, 120), done: false });
+        el.draftInput.value = "";
+      }
+    }
+    return draftPlan.map(function (s) { return { id: s.id, text: s.text, done: false }; });
+  }
+
+  function renderDraft() {
+    const s = t();
+    el.draft.hidden = !draftOpen;
+    el.planBtn.setAttribute("aria-expanded", draftOpen ? "true" : "false");
+    el.planBtn.setAttribute("aria-label", s.planFirst);
+    el.planBtn.title = s.planFirst;
+    if (!draftOpen) return;
+
+    el.draftLabel.textContent = draftPlan.length ? s.plan : s.planHint;
+    el.draftSuggest.textContent = s.suggest;
+    el.draftInput.placeholder = s.addStep;
+    el.draftInput.setAttribute("aria-label", s.addStep);
+
+    el.draftList.textContent = "";
+    draftPlan.forEach(function (step) {
+      const li = document.createElement("li");
+      li.className = "step";
+      li.dataset.draft = step.id;
+
+      const field = document.createElement("input");
+      field.className = "fld step__text";
+      field.maxLength = 120;
+      field.value = step.text;
+      field.setAttribute("aria-label", s.plan);
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "icon-btn icon-btn--sm";
+      del.dataset.draftDel = step.id;
+      del.setAttribute("aria-label", s.remove);
+      del.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+      li.appendChild(field);
+      li.appendChild(del);
+      el.draftList.appendChild(li);
+    });
+  }
+
+  /* ==========================================================
+     12d. THE LINE THAT KNOWS THE DAY
+     ==========================================================
+     Nothing new is stored or asked for: the date, the chosen city and the
+     task list are all already here. This only says out loud what the app
+     already knows, in the space the empty list was wasting. */
+  function renderToday() {
+    const s = t();
+    const now = new Date();
+    el.today.textContent = "";
+
+    const date = document.createElement("span");
+    date.className = "today__date";
+    try {
+      date.textContent = new Intl.DateTimeFormat(
+        state.lang === "ar" ? "ar-SA-u-ca-islamic-umalqura" : "en-GB",
+        { weekday: "long", day: "numeric", month: "long" }).format(now);
+    } catch (e) {
+      date.textContent = now.toDateString();
+    }
+    el.today.appendChild(date);
+
+    const next = nextPrayerIn(now);
+    if (next) {
+      el.today.appendChild(dot());
+      const span = document.createElement("span");
+      span.className = "today__next";
+      span.textContent = next.name + " " + (next.mins < 60 ? s.inMinutes(next.mins)
+                                                           : s.inHours(Math.round(next.mins / 60)));
+      el.today.appendChild(span);
+    }
+
+    el.today.appendChild(dot());
+    const count = document.createElement("span");
+    const n = tasksDueToday(now);
+    count.textContent = n ? s.dueToday(n) : s.allClear;
+    el.today.appendChild(count);
+  }
+
+  function dot() {
+    const d = document.createElement("span");
+    d.className = "today__sep";
+    d.textContent = "·";
+    return d;
+  }
+
+  function nextPrayerIn(now) {
+    try {
+      const hour = now.getHours() + now.getMinutes() / 60;
+      const rows = prayerRows();
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i].at > hour) {
+          return { name: rows[i].name, mins: Math.round((rows[i].at - hour) * 60) };
+        }
+      }
+    } catch (e) { /* a city the table no longer has */ }
+    return null;
+  }
+
+  function tasksDueToday(now) {
+    const end = new Date(now); end.setHours(23, 59, 59, 999);
+    return state.tasks.filter(function (task) {
+      if (task.done || !task.due) return false;
+      return new Date(task.due + "T23:59:59") <= end;
+    }).length;
+  }
+
+  /* ==========================================================
+     12e. HOW TO USE IT — a sheet, so the app stays one screen
+     ========================================================== */
+  const HELP_ICONS = {
+    task:   '<path d="M4 7h11M4 12h11M4 17h7"/><path d="m17.5 15.5 2 2 3.5-3.5"/>',
+    tap:    '<path d="M9 11V6.5a2 2 0 0 1 4 0V13"/><path d="M13 11.5a2 2 0 0 1 4 0V15a5 5 0 0 1-5 5h-.6a4 4 0 0 1-3.1-1.5L5 14.5a1.8 1.8 0 0 1 2.6-2.4L9 13.4"/>',
+    bell:   '<path d="M18 15.5V11a6 6 0 1 0-12 0v4.5L4.5 18h15Z"/><path d="M10 21h4"/>',
+    repeat: '<path d="M4 11a7 7 0 0 1 12-4.9M20 13a7 7 0 0 1-12 4.9"/><path d="M16 3v3.5h-3.5M8 21v-3.5h3.5"/>',
+    moon:   '<path d="M4.5 19.5h15"/><path d="M6.5 19.5v-5a5.5 5.5 0 0 1 11 0v5"/><path d="M12 4v4.5"/>',
+    goal:   '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 12 21 3"/>',
+    note:   '<path d="M6 3.5h9L19 8v12.5H6Z"/><path d="M14.5 3.5V8H19"/><path d="M9 12h7M9 16h5"/>',
+    save:   '<path d="M12 4v10"/><path d="m8 10.5 4 4 4-4"/><path d="M5 17.5v2h14v-2"/>',
+    phone:  '<rect x="5.5" y="2" width="13" height="20" rx="3"/><path d="M10 4.6h4"/><path d="M12 8.4v5.4"/><path d="m9.5 11.4 2.5 2.6 2.5-2.6"/>'
+  };
+
+  function renderHelp() {
+    const s = t();
+    el.helpTitle.textContent = s.help;
+    el.helpClose.setAttribute("aria-label", s.close || "×");
+    el.helpBody.textContent = "";
+    s.helpItems.forEach(function (item) {
+      const box = document.createElement("div");
+      box.className = "help__item";
+
+      const q = document.createElement("p");
+      q.className = "help__q";
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("aria-hidden", "true");
+      svg.innerHTML = HELP_ICONS[item[0]] || HELP_ICONS.task;
+      q.appendChild(svg);
+      const label = document.createElement("span");
+      label.textContent = item[1];
+      q.appendChild(label);
+
+      const a = document.createElement("p");
+      a.className = "help__a";
+      a.textContent = item[2];
+
+      box.appendChild(q);
+      box.appendChild(a);
+      el.helpBody.appendChild(box);
+    });
+  }
+
+  function openHelp() {
+    renderHelp();
+    el.help.hidden = false;
+    el.helpClose.focus();
+  }
+
+  function closeHelp() {
+    el.help.hidden = true;
+    el.helpBtn.focus();
+  }
+
+  /* ==========================================================
      13. VIEWS
      ========================================================== */
   function showTab(name) {
@@ -3209,9 +3835,14 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     const clean = text.slice(0, MAX_LEN);
     state.tasks.push({
       id: createId(), text: clean, done: false, due: validDue(el.due.value), at: null,
-      priority: "normal", repeat: "none", every: null, plan: [],
+      priority: "normal", repeat: "none", every: null,
+      plan: collectDraft(),                        // the sketch travels with the task
       lang: detect(clean), tr: {}
     });
+    draftPlan = [];                                // and the composer starts clean again
+    draftOpen = false;
+    saveDraft();
+    renderDraft();
     el.due.value = "";                             // the date applies to that task only
     markComposerDate();
     el.input.value = "";
@@ -3382,9 +4013,11 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     renderChrome();
     renderTabs();
     fillCities();
+    if (!el.cityList.hidden) { browsing ? showCountryCities(browsing) : showCountries(); }
     if (state.tab === "prayer") renderPrayer();
     if (state.tab === "goals") renderGoals();
     if (state.tab === "notes") renderNotes();
+    renderDraft();
     paintBrand();                                  // the name may differ per language
     updateManifest();
     renderList();                                  // labels are translated too
@@ -3627,10 +4260,13 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     if (btn) showTab(btn.dataset.tab);
   });
 
-  el.cityPick.addEventListener("focus", function () { el.cityPick.select(); });
+  el.cityPick.addEventListener("focus", function () {
+    el.cityPick.select();
+    if (!el.cityPick.value.trim() || el.cityList.hidden) showCountries();
+  });
   el.cityPick.addEventListener("input", function () {
     const term = el.cityPick.value.trim();
-    if (term) showCityResults(term); else hideCityResults();
+    if (term) showCityResults(term); else showCountries();   // clearing goes back to the list
   });
   el.cityPick.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
@@ -3638,14 +4274,22 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       const hits = searchCities(el.cityPick.value.trim());
       if (hits.length) pickCity(hits[0]);
     }
-    if (e.key === "Escape") { fillCities(); hideCityResults(); el.cityPick.blur(); }
+    if (e.key === "Escape") {
+      if (browsing) { showCountries(); return; }   // one step back, then out
+      fillCities(); hideCityResults(); el.cityPick.blur();
+    }
   });
   el.cityPick.addEventListener("blur", function () {
     setTimeout(function () {                       // let a tap on a result land first
+      if (browsing) return;                        // still choosing inside a country
       if (!el.cityList.hidden) { fillCities(); hideCityResults(); }
     }, 180);
   });
   el.cityList.addEventListener("click", function (e) {
+    const back = e.target.closest("[data-back]");
+    if (back) { showCountries(); return; }
+    const country = e.target.closest("[data-country]");
+    if (country) { showCountryCities(country.dataset.country); return; }
     const row = e.target.closest("[data-city]");
     if (row) pickCity(parseInt(row.dataset.city, 10));
   });
@@ -3759,6 +4403,15 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     setOwner(el.brandEdit.value);
   });
 
+  el.helpBtn.addEventListener("click", openHelp);
+  el.helpClose.addEventListener("click", closeHelp);
+  el.help.addEventListener("click", function (e) {
+    if (e.target === el.help) closeHelp();         // tapping outside closes it
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !el.help.hidden) closeHelp();
+  });
+
   el.installBtn.addEventListener("click", showInstall);
   el.backupBtn.addEventListener("click", toggleBackup);
   el.stripMain.addEventListener("click", function () { if (stripRuns.main) stripRuns.main.run(); });
@@ -3770,6 +4423,24 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     el.importFile.value = "";                      // allow re-picking the same file
   });
   el.addBtn.addEventListener("click", addTask);
+  el.planBtn.addEventListener("click", toggleDraft);
+  el.draftSuggest.addEventListener("click", suggestDraft);
+  el.draftAdd.addEventListener("click", addDraftStep);
+  el.draftInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); addDraftStep(); }
+  });
+  el.draftList.addEventListener("click", function (e) {
+    const del = e.target.closest("[data-draft-del]");
+    if (!del) return;
+    draftPlan = draftPlan.filter(function (s) { return s.id !== del.dataset.draftDel; });
+    saveDraft();
+    renderDraft();
+  });
+  el.draftList.addEventListener("change", function (e) {
+    if (!e.target.classList.contains("step__text")) return;
+    const step = draftPlan.find(function (s) { return s.id === e.target.closest("[data-draft]").dataset.draft; });
+    if (step) { step.text = e.target.value.trim().slice(0, 120) || step.text; saveDraft(); }
+  });
 
   el.input.addEventListener("keydown", function (e) {
     if (e.key === "Enter") { e.preventDefault(); addTask(); }
@@ -3890,6 +4561,8 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   renderList();
   translateTasks(true);                            // quietly: never prompt on launch
   renderTabs();
+  renderDraft();
+  setInterval(renderToday, 60000);                 // the countdown stays honest
   fillCities();
   showTab(state.tab);
   syncPrayerAlerts();
