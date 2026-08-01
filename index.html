@@ -162,6 +162,27 @@ button{background:none;border:0;cursor:pointer}
 }
 .sheet__title{flex:1;font-size:1.02rem;font-weight:650;color:var(--ink)}
 .sheet__body{flex:1;min-height:0;overflow-y:auto;padding:6px 16px 20px}
+.record-link{
+  flex:none;
+  align-self:center;
+  margin-block:2px 6px;
+  padding:6px 14px;
+  border:0;background:none;
+  font-size:.76rem;
+  color:var(--muted);
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.done-row{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.done-row:last-child{border-bottom:0}
+.done-row__body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.done-row__text{overflow-wrap:anywhere;line-height:1.4;color:var(--ink)}
+.done-row__when{font-size:.74rem;color:var(--muted)}
+.done-row__tick{
+  flex:none;width:20px;height:20px;margin-block-start:2px;
+  fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+}
+
 .help__item{padding:14px 0;border-bottom:1px solid var(--line)}
 .help__item:last-child{border-bottom:0}
 .help__q{display:flex;align-items:center;gap:9px;font-weight:650;color:var(--ink);font-size:.94rem}
@@ -894,6 +915,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
         <p class="empty__mood" id="emptyMood"></p>
         <p class="empty__hint" id="emptyHint"></p>
       </div>
+      <button class="record-link" id="recordLink" type="button" hidden></button>
       <div class="welcome" id="welcome" hidden>
         <p class="welcome__hi" id="welcomeHi"></p>
         <label class="welcome__q" id="welcomeQ" for="welcomeName"></label>
@@ -955,6 +977,22 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     <span class="dua__pray" id="duaPray"></span>
     <span class="dua__meta" id="duaMeta"></span>
   </p>
+
+  <div class="sheet" id="record" hidden>
+    <div class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="recordTitle">
+      <div class="sheet__head">
+        <h2 class="sheet__title" id="recordTitle"></h2>
+        <button class="linkbtn" id="recordClear" type="button"></button>
+        <button class="icon-btn" id="recordClose" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="sheet__body">
+        <ul class="list" id="recordList"></ul>
+        <p class="empty" id="recordEmpty" role="status" hidden></p>
+      </div>
+    </div>
+  </div>
 
   <div class="sheet" id="help" hidden>
     <div class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -1076,6 +1114,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   const GOALS_KEY  = "todo.goals";
   const NOTES_KEY  = "todo.notes";
   const DRAFT_KEY  = "todo.draft";      // a plan sketched before the task exists
+  const DONE_KEY   = "todo.done";       // finished tasks, kept after they are deleted
   const MAX_LEN   = 200;
   const PRIORITIES = ["high", "normal", "low"];
   const REPEATS    = ["none", "daily", "weekly", "monthly", "yearly", "hourly", "custom"];
@@ -1153,6 +1192,11 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       noteEmpty: "Nothing kept yet. A plate number, a date, an address — write it above.",
       noteNoMatch: function (q) { return "Nothing here matches \u201C" + q + "\u201D."; },
       copy: "Copy", copied: "Copied", copyFailed: "Select the text and copy it by hand.",
+      done: "Done", doneEmpty: "Nothing here yet. Finish a task and delete it — it will be kept here.",
+      doneCount: function (n) { return n === 1 ? "1 finished" : n + " finished"; },
+      restoreTask: "Put it back", forget: "Forget it", clearDone: "Clear the record",
+      clearDoneAsk: "Clear everything in the record? This cannot be undone.",
+      finishedOn: function (d) { return "Finished " + d; },
       help: "How to use it",
       helpItems: [
         ["task", "Add a task", "Type it and press Add. Tap the list icon beside the box to plan its steps first — the plan is kept even if you close it."],
@@ -1162,6 +1206,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
         ["moon", "Prayer times", "Open Prayer, tap the city box, choose your country then your city. Turn the alert on to be told when each prayer comes in."],
         ["goal", "Goals", "A goal, a date if you want one, and its first step. Nothing else is required."],
         ["note", "Notes", "Anything worth keeping — a plate number, an address, a date. Typing in the box searches what you saved, and each note has a copy button."],
+        ["tick", "Your record", "Finish a task and delete it, and it is kept in your record with the day you did it. Tap the count under the list to see it, or put a task back."],
         ["save", "Keep a copy", "Your data lives on this device only. Use Save a copy from time to time, and Restore to bring it back."],
         ["phone", "Put it on your screen", "Tap the phone icon at the top. It installs like any app and then works without internet."]
       ],
@@ -1254,6 +1299,11 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       noteEmpty: "لا ملاحظات بعد. رقم لوحة، أو موعد، أو عنوان — اكتبه من الأعلى.",
       noteNoMatch: function (q) { return "لا شيء هنا يطابق \u201C" + q + "\u201D."; },
       copy: "نسخ", copied: "نُسخت", copyFailed: "حدّد النص وانسخه يدوياً.",
+      done: "المنجز", doneEmpty: "لا شيء هنا بعد. أنجز مهمة ثم احذفها — تُحفظ لك هنا.",
+      doneCount: function (n) { return n === 1 ? "مهمة منجزة" : n + " مهمة منجزة"; },
+      restoreTask: "أعدها", forget: "احذفها نهائياً", clearDone: "أفرغ السجلّ",
+      clearDoneAsk: "هل تفرغ السجلّ كاملاً؟ لا رجعة بعدها.",
+      finishedOn: function (d) { return "أُنجزت " + d; },
       help: "طريقة الاستخدام",
       helpItems: [
         ["task", "أضف مهمة", "اكتبها واضغط «إضافة». وإن أردت التخطيط أولاً، اضغط أيقونة القائمة بجانب الصندوق — الخطة تبقى محفوظة حتى لو أغلقتها."],
@@ -1263,6 +1313,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
         ["moon", "مواقيت الصلاة", "افتح «الصلاة»، اضغط صندوق المدينة، اختر دولتك ثم مدينتك. وفعّل التنبيه ليصلك عند دخول كل وقت."],
         ["goal", "الأهداف", "هدف، وتاريخ إن أردت، وأول خطوة. لا شيء آخر مطلوب."],
         ["note", "الملاحظات", "أي شيء تريد حفظه — رقم لوحة، عنوان، موعد. والكتابة في الصندوق تبحث فيما حفظت، ولكل ملاحظة زر نسخ."],
+        ["tick", "سجلّ الإنجاز", "أنجز مهمة ثم احذفها فتُحفظ في سجلّك مع تاريخ إنجازها. اضغط العدد أسفل القائمة لتراه، أو لتعيد مهمة."],
         ["save", "احفظ نسخة", "بياناتك على هذا الجهاز وحده. استخدم «حفظ نسخة» من حين لآخر، و«استعادة» لإرجاعها."],
         ["phone", "ثبّته على شاشتك", "اضغط أيقونة الجوال في الأعلى. يُثبَّت كأي تطبيق ثم يعمل بلا إنترنت."]
       ],
@@ -1411,7 +1462,8 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     city: parseInt(read(CITY_KEY), 10) || 0,
     athan: read(ATHAN_KEY) === "on",
     goals: loadGoals(),
-    notes: loadNotes()
+    notes: loadNotes(),
+    done: loadDone()
   };
 
   const rows = new Map();                          // task id -> <li>, rebuilt each render
@@ -1484,6 +1536,13 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     welcomeName: document.getElementById("welcomeName"),
     welcomeGo: document.getElementById("welcomeGo"),
     welcomeSkip: document.getElementById("welcomeSkip"),
+    recordLink: document.getElementById("recordLink"),
+    record:   document.getElementById("record"),
+    recordTitle: document.getElementById("recordTitle"),
+    recordClear: document.getElementById("recordClear"),
+    recordClose: document.getElementById("recordClose"),
+    recordList: document.getElementById("recordList"),
+    recordEmpty: document.getElementById("recordEmpty"),
     helpBtn:  document.getElementById("helpBtn"),
     help:     document.getElementById("help"),
     helpTitle: document.getElementById("helpTitle"),
@@ -1799,6 +1858,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
 
     el.list.replaceChildren(frag);                 // one insertion, one reflow
     renderToday();
+    renderRecordLink();
     if (greetingDue()) { showWelcome(); }
     else {
       el.welcome.hidden = true;
@@ -3613,6 +3673,126 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   }
 
   /* ==========================================================
+     12d2. THE RECORD — finished work is kept, everything else is let go
+     ==========================================================
+     Deleting a task you never finished simply deletes it. Deleting one you
+     ticked off puts it here instead, with the day it was done, so a year from
+     now you can still answer "when did I do that?". */
+  function loadDone() {
+    try {
+      const raw = JSON.parse(read(DONE_KEY) || "[]");
+      if (!Array.isArray(raw)) return [];
+      return raw.reduce(function (list, item) {
+        const text = item && typeof item.text === "string" ? item.text.trim() : "";
+        if (text) list.push({
+          id: item.id && typeof item.id === "string" ? item.id : createId(),
+          text: text.slice(0, MAX_LEN),
+          at: typeof item.at === "string" ? item.at : new Date().toISOString(),
+          plan: normalizePlan(item.plan)
+        });
+        return list;
+      }, []).slice(0, 500);
+    } catch (e) { return []; }
+  }
+
+  function saveDone() { write(DONE_KEY, JSON.stringify(state.done)); }
+
+  function keepFinished(task) {
+    state.done.unshift({
+      id: task.id,
+      text: task.text,
+      at: new Date().toISOString(),
+      plan: Array.isArray(task.plan) ? task.plan : []
+    });
+    if (state.done.length > 500) state.done.length = 500;   // a record, not a hoard
+    saveDone();
+  }
+
+  function whenDone(iso) {
+    try {
+      return new Intl.DateTimeFormat(state.lang === "ar" ? "ar-u-nu-latn" : "en-GB",
+        { day: "numeric", month: "short", year: "numeric" }).format(new Date(iso));
+    } catch (e) { return iso.slice(0, 10); }
+  }
+
+  function renderRecordLink() {
+    const s = t();
+    const n = state.done.length;
+    el.recordLink.hidden = n === 0;
+    el.recordLink.textContent = s.doneCount(n);
+  }
+
+  function renderRecord() {
+    const s = t();
+    el.recordTitle.textContent = s.done;
+    el.recordClear.textContent = s.clearDone;
+    el.recordClear.hidden = state.done.length === 0;
+    el.recordClose.setAttribute("aria-label", s.close || "\u00D7");
+    el.recordList.textContent = "";
+
+    state.done.forEach(function (item) {
+      const li = document.createElement("li");
+      li.className = "done-row";
+      li.dataset.done = item.id;
+
+      const tick = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      tick.setAttribute("viewBox", "0 0 24 24");
+      tick.setAttribute("class", "done-row__tick");
+      tick.setAttribute("aria-hidden", "true");
+      tick.innerHTML = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
+
+      const body = document.createElement("span");
+      body.className = "done-row__body";
+      const text = document.createElement("span");
+      text.className = "done-row__text";
+      text.textContent = item.text;
+      const when = document.createElement("span");
+      when.className = "done-row__when";
+      when.textContent = s.finishedOn(whenDone(item.at));
+      body.appendChild(text);
+      body.appendChild(when);
+
+      const back = document.createElement("button");
+      back.type = "button";
+      back.className = "icon-btn";
+      back.dataset.rec = "restore";
+      back.setAttribute("aria-label", s.restoreTask);
+      back.title = s.restoreTask;
+      back.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M4 11a7 7 0 1 1 2 5"/><path d="M4 6.5V11h4.5"/></svg>';
+
+      const drop = document.createElement("button");
+      drop.type = "button";
+      drop.className = "icon-btn btn-delete";
+      drop.dataset.rec = "drop";
+      drop.setAttribute("aria-label", s.forget);
+      drop.title = s.forget;
+      drop.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/>' +
+        '<path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>';
+
+      li.appendChild(tick);
+      li.appendChild(body);
+      li.appendChild(back);
+      li.appendChild(drop);
+      el.recordList.appendChild(li);
+    });
+
+    el.recordEmpty.hidden = state.done.length > 0;
+    el.recordEmpty.textContent = s.doneEmpty;
+  }
+
+  function openRecord() {
+    renderRecord();
+    el.record.hidden = false;
+    el.recordClose.focus();
+  }
+
+  function closeRecord() {
+    el.record.hidden = true;
+    el.recordLink.focus();
+  }
+
+  /* ==========================================================
      12e. HOW TO USE IT — a sheet, so the app stays one screen
      ========================================================== */
   const HELP_ICONS = {
@@ -3623,6 +3803,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     moon:   '<path d="M4.5 19.5h15"/><path d="M6.5 19.5v-5a5.5 5.5 0 0 1 11 0v5"/><path d="M12 4v4.5"/>',
     goal:   '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 12 21 3"/>',
     note:   '<path d="M6 3.5h9L19 8v12.5H6Z"/><path d="M14.5 3.5V8H19"/><path d="M9 12h7M9 16h5"/>',
+    tick:   '<path d="M20.5 6 9 17.5 3.5 12"/>',
     save:   '<path d="M12 4v10"/><path d="m8 10.5 4 4 4-4"/><path d="M5 17.5v2h14v-2"/>',
     phone:  '<rect x="5.5" y="2" width="13" height="20" rx="3"/><path d="M10 4.6h4"/><path d="M12 8.4v5.4"/><path d="m9.5 11.4 2.5 2.6 2.5-2.6"/>'
   };
@@ -3745,7 +3926,8 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       exported: new Date().toISOString(),
       tasks: state.tasks,
       goals: state.goals,
-      notes: state.notes
+      notes: state.notes,
+      done: state.done
     }, null, 2);
   }
 
@@ -3791,12 +3973,23 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
       const haveGoals = new Set(state.goals.map(function (g) { return g.id; }));
       goals.forEach(function (g) { if (!haveGoals.has(g.id)) { state.goals.push(g); added++; } });
 
+      const record = Array.isArray(incoming && incoming.done) ? incoming.done : [];
+      const haveDone = new Set(state.done.map(function (d) { return d.id; }));
+      record.forEach(function (d) {
+        if (d && typeof d.text === "string" && d.text.trim() && !haveDone.has(d.id)) {
+          state.done.push({ id: d.id || createId(), text: d.text.trim().slice(0, MAX_LEN),
+                            at: typeof d.at === "string" ? d.at : new Date().toISOString(),
+                            plan: normalizePlan(d.plan) });
+          added++;
+        }
+      });
+
       const notes = normalizeNoteList(incoming && incoming.notes);
       const haveNotes = new Set(state.notes.map(function (n) { return n.id; }));
       notes.forEach(function (n) { if (!haveNotes.has(n.id)) { state.notes.push(n); added++; } });
 
       if (added) {
-        saveTasks(); saveGoals(); saveNotes();
+        saveTasks(); saveGoals(); saveNotes(); saveDone();
         renderList();
         if (state.tab === "goals") renderGoals();
         if (state.tab === "notes") renderNotes();
@@ -3922,6 +4115,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     const at = state.tasks.findIndex(function (task) { return task.id === id; });
     if (at < 0) return;
     lastDeleted = { task: state.tasks[at], at: at };
+    if (state.tasks[at].done) keepFinished(state.tasks[at]);   // finished work is not thrown away
     const neighbour = nextFocusAfter(id);
     state.tasks.splice(at, 1);
     if (state.editingId === id) state.editingId = null;
@@ -4403,6 +4597,42 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
     setOwner(el.brandEdit.value);
   });
 
+  el.recordLink.addEventListener("click", openRecord);
+  el.recordClose.addEventListener("click", closeRecord);
+  el.record.addEventListener("click", function (e) {
+    if (e.target === el.record) closeRecord();
+  });
+  el.recordClear.addEventListener("click", function () {
+    if (!state.done.length) return;
+    if (!confirm(t().clearDoneAsk)) return;        // one deliberate confirmation
+    state.done = [];
+    saveDone();
+    renderRecord();
+    renderRecordLink();
+  });
+  el.recordList.addEventListener("click", function (e) {
+    const btn = e.target.closest("[data-rec]");
+    if (!btn) return;
+    const id = btn.closest("[data-done]").dataset.done;
+    const at = state.done.findIndex(function (x) { return x.id === id; });
+    if (at < 0) return;
+    const item = state.done[at];
+    if (btn.dataset.rec === "restore") {
+      state.tasks.push({
+        id: createId(), text: item.text, done: false, due: null, at: null,
+        priority: "normal", repeat: "none", every: null,
+        plan: item.plan.map(function (p) { return { id: createId(), text: p.text, done: false }; }),
+        lang: detect(item.text), tr: {}
+      });
+      commit();
+    }
+    state.done.splice(at, 1);                      // either way it leaves the record
+    saveDone();
+    renderRecord();
+    renderRecordLink();
+    if (!state.done.length) closeRecord();
+  });
+
   el.helpBtn.addEventListener("click", openHelp);
   el.helpClose.addEventListener("click", closeHelp);
   el.help.addEventListener("click", function (e) {
@@ -4410,6 +4640,7 @@ html[dir="rtl"] .progress__fill{transform:scaleX(-1)}   /* grows from the right 
   });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && !el.help.hidden) closeHelp();
+    else if (e.key === "Escape" && !el.record.hidden) closeRecord();
   });
 
   el.installBtn.addEventListener("click", showInstall);
